@@ -51,36 +51,36 @@ InfoHandle::InfoHandle(Face& face, RepoStorage& storageHandle,
 void
 InfoHandle::handleInfoCommand(const Name& prefix, const Interest& interest)
 {
- namespace pt = boost::property_tree;
- pt::ptree root, disk, memory, diskNode, memoryNode;
+  namespace pt = boost::property_tree;
+  pt::ptree root, disk, memory, diskNode, memoryNode;
 
- struct statvfs sv;
- statvfs("/",&sv);
+  struct statvfs sv;
+  statvfs("/",&sv);
 
- diskNode.put("size", ((long long)sv.f_blocks * sv.f_bsize / 1024));
- diskNode.put("usage", ((long long)sv.f_bavail * sv.f_bsize / 1024));
- disk.add_child("disk", diskNode);
+  diskNode.put("size", ((long long)sv.f_blocks * sv.f_bsize / 1024));
+  diskNode.put("usage", ((long long)sv.f_bavail * sv.f_bsize / 1024));
+  disk.add_child("disk", diskNode);
 
- struct sysinfo si;
- sysinfo(&si);
+  struct sysinfo si;
+  sysinfo(&si);
 
- memoryNode.put("size", ((long long)si.totalram / 1024));
- memoryNode.put("usage", ((long long)si.freeram / 1024)) ;
- memory.add_child("memory", memoryNode);
+  memoryNode.put("size", ((long long)si.totalram / 1024));
+  memoryNode.put("usage", ((long long)si.freeram / 1024)) ;
+  memory.add_child("memory", memoryNode);
 
- auto datas = CommandBaseHandle::storageHandle.readDatas();
- auto manifests = CommandBaseHandle::storageHandle.readManifests();
+  auto datas = CommandBaseHandle::storageHandle.readDatas();
+  auto manifests = CommandBaseHandle::storageHandle.readManifests();
 
- root.put("name", prefix.toUri());
- root.add_child("disk", disk);
- root.add_child("memory", memory);
- root.add_child("datas", datas);
- root.add_child("manifests", manifests);
+  root.put("name", prefix.toUri());
+  root.add_child("disk", disk);
+  root.add_child("memory", memory);
+  root.add_child("datas", datas);
+  root.add_child("manifests", manifests);
 
- std::stringstream os;
- pt::write_json(os, root, false);
+  std::stringstream os;
+  pt::write_json(os, root, false);
 
- reply(interest, os.str());
+  reply(interest, os.str());
 }
 
 void

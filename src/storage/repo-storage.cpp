@@ -37,18 +37,55 @@ RepoStorage::RepoStorage(Storage& store)
 bool
 RepoStorage::insertData(const Data& data)
 {
-  bool isExist = m_storage.has(data.getFullName());
+  // bool isExist = m_storage.has(data.getFullName());
 
-  if (isExist) {
-    NDN_LOG_DEBUG("Data already in storage, regarded as successful data insertion");
-    return true;
-  }
-
+  // if (isExist) {
+  //   NDN_LOG_DEBUG("Data already in storage, regarded as successful data insertion");
+  //   return true;
+  // }
   int64_t id = m_storage.insert(data);
   if (id == NOTFOUND)
     return false;
 
-  afterDataInsertion(data.getName());
+  uint64_t finalBlockId = data.getFinalBlock().value().toSegment();
+  uint64_t segmentNo = data.getName().get(-1).toSegment();
+
+  std::cout << "final: " << finalBlockId << std::endl;
+  std::cout << "segment: " << segmentNo << std::endl;
+  if (finalBlockId == segmentNo) {
+    afterDataInsertion(data.getName());
+  }
+
+  return true;
+}
+
+bool
+RepoStorage::insertData1(const Data& data, int test)
+{
+  // bool isExist = m_storage.has(data.getFullName());
+
+  // if (isExist) {
+  //   NDN_LOG_DEBUG("Data already in storage, regarded as successful data insertion");
+  //   return true;
+  // }
+
+  if (test > 7761) {
+    // int64_t id = m_storage.insert1(data);
+    // if (id == NOTFOUND)
+    //   return false;
+  } else {
+    int64_t id = m_storage.insert(data);
+    if (id == NOTFOUND)
+      return false;
+  }
+
+  uint64_t finalBlockId = data.getFinalBlock().value().toSegment();
+  uint64_t segmentNo = data.getName().get(-1).toSegment();
+
+  if (finalBlockId == segmentNo) {
+    // afterDataInsertion(data.getName());
+  }
+
   return true;
 }
 

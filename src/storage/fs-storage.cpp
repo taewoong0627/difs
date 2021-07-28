@@ -113,6 +113,12 @@ FsStorage::insert(const Data& data)
   return writeData(data, DIRNAME_DATA);
 }
 
+int64_t
+FsStorage::insert1(const Data& data)
+{
+  return writeData(data, DIRNAME_DATA);
+}
+
 std::string
 FsStorage::insertManifest(const Manifest& manifest)
 {

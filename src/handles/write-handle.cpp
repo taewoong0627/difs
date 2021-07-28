@@ -211,6 +211,7 @@ WriteHandle::processSingleInsertCommand(const Interest& interest, const RepoComm
 void
 WriteHandle::segInit(ProcessId processId, const RepoCommandParameter& parameter)
 {
+  std::cout << "segInit" << std::endl;
   // use HCSegmentFetcher to send fetch interest.
   ProcessInfo& process = m_processes[processId];
   Name name = parameter.getName();
@@ -267,13 +268,16 @@ WriteHandle::onSegmentData(ndn::util::HCSegmentFetcher& fetcher, const Data& dat
   RepoCommandResponse& response = it->second.response;
 
   //insert data
+  static int test = 0;
+  std::cout << test++ << std::endl;
+
   if (storageHandle.insertData(data)) {
     response.setInsertNum(response.getInsertNum() + 1);
   }
 
   ProcessInfo& process = m_processes[processId];
 
-  //read whether notime timeout
+  // read whether notime timeout
   if (!response.hasEndBlockId()) {
 
     ndn::time::steady_clock::TimePoint& noEndTime = process.noEndTime;
@@ -290,7 +294,7 @@ WriteHandle::onSegmentData(ndn::util::HCSegmentFetcher& fetcher, const Data& dat
     }
   }
 
-  //read whether this process has total ends, if ends, remove control info from the maps
+  // read whether this process has total ends, if ends, remove control info from the maps
   if (response.hasEndBlockId()) {
     it->second.endBlockId = response.getEndBlockId();
     uint64_t nSegments = response.getEndBlockId() - response.getStartBlockId() + 1;

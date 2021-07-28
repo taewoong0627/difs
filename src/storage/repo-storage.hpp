@@ -56,6 +56,9 @@ public:
   bool
   insertData(const Data& data);
 
+  bool
+  insertData1(const Data& data, int test);
+
   /**
    *  @brief   delete data from repo
    *  @param   name from interest, use it as a prefix to find entry needed to be erased in repo

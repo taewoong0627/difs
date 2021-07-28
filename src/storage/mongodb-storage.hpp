@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
@@ -55,8 +56,14 @@ public:
    *  @param  data     the data should be inserted into databse
    *  @return int64_t  the id number of each entry in the database
    */
+  void
+  insert_func();
+
   int64_t
   insert(const Data& data) override;
+
+  int64_t
+  insert1(const Data& data) override;
 
   std::string
   insertManifest(const Manifest& data) override;
@@ -112,6 +119,8 @@ private:
   mongocxx::instance mInstance;
   mongocxx::client mClient;
   mongocxx::database mDB;
+
+  std::vector<bsoncxx::document::view_or_value> dataList;
 
   static const char* COLLNAME_DATA;
   static const char* COLLNAME_MANIFEST;

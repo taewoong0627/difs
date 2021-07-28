@@ -58,6 +58,9 @@ public:
   int64_t
   insert(const Data& data) override;
 
+  int64_t
+  insert1(const Data& data) override;
+
   std::string
   insertManifest(const Manifest& data) override;
 

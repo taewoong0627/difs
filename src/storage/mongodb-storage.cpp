@@ -25,6 +25,7 @@
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/json.hpp>
 #include <ndn-cxx/util/logger.hpp>
+#include <thread>
 
 namespace repo {
 
@@ -67,15 +68,25 @@ MongoDBStorage::~MongoDBStorage()
 {
 }
 
+void
+MongoDBStorage::insert_func()
+{
+  mongocxx::collection coll = mDB[COLLNAME_DATA];
+  
+  coll.insert_many(dataList);
+  dataList.clear();
+
+  return;
+}
+
 int64_t
 MongoDBStorage::insert(const Data& data)
 {
+  uint64_t finalBlockId = data.getFinalBlock().value().toSegment();
+  uint64_t segmentNo = data.getName().get(-1).toSegment();
+  
   mongocxx::collection coll = mDB[COLLNAME_DATA];
   string key = sha1Hash(data.getName().toUri());
-
-  bsoncxx::document::view_or_value filter = document{}
-    << FIELDNAME_KEY << key
-    << finalize;
 
   bsoncxx::types::b_binary dataBinary;
   dataBinary.bytes = data.wireEncode().wire();
@@ -86,10 +97,42 @@ MongoDBStorage::insert(const Data& data)
     << FIELDNAME_VALUE << dataBinary
     << finalize;
 
-  mongocxx::options::replace options;
-  options.upsert(true);
-  coll.replace_one(filter, replacement, options);
+  dataList.push_back(replacement);
+  if(dataList.size() == 300 || finalBlockId == segmentNo) {
+    coll.insert_many(dataList);
+    dataList.clear();
+    // coll.drop();
+  } 
+
+  auto id = hash(data.getName().toUri());
+  return id;
+}
+
+int64_t
+MongoDBStorage::insert1(const Data& data)
+{
+  std::cout << "insert1" << std::endl;
+
+  uint64_t finalBlockId = data.getFinalBlock().value().toSegment();
+  uint64_t segmentNo = data.getName().get(-1).toSegment();
   
+  // mongocxx::collection coll = mDB[COLLNAME_DATA];
+  string key = sha1Hash(data.getName().toUri());
+
+  // bsoncxx::types::b_binary dataBinary;
+  // dataBinary.bytes = data.wireEncode().wire();
+  // dataBinary.size = data.wireEncode().size();
+
+  // bsoncxx::document::view_or_value replacement = document{}
+  //   << FIELDNAME_KEY << key
+  //   << FIELDNAME_VALUE << dataBinary
+  //   << finalize;
+
+  // dataList.push_back(replacement);
+  if(dataList.size() == 8096 || finalBlockId == segmentNo) {
+    dataList.clear();
+  } 
+
   auto id = hash(data.getName().toUri());
   return id;
 }
@@ -158,6 +201,7 @@ MongoDBStorage::eraseManifest(const string& hash)
 std::shared_ptr<Data>
 MongoDBStorage::read(const Name& name)
 {
+  std::cout << "read" << std::endl;
   mongocxx::collection coll = mDB[COLLNAME_DATA];
   string key = sha1Hash(name.toUri());
 
@@ -239,19 +283,19 @@ MongoDBStorage::readManifests()
 bool
 MongoDBStorage::has(const Name& name)
 {
-  mongocxx::collection coll = mDB[COLLNAME_DATA];
-  string key = sha1Hash(name.toUri());
+  // mongocxx::collection coll = mDB[COLLNAME_DATA];
+  // string key = sha1Hash(name.toUri());
 
-  auto maybe_result = coll.find_one(document{}
-    << FIELDNAME_KEY << key
-    << finalize);
+  // auto maybe_result = coll.find_one(document{}
+  //   << FIELDNAME_KEY << key
+  //   << finalize);
 
-  if (maybe_result) {
-    return true;
-  }
-  else {
-    return false;
-  }
+  // if (maybe_result) {
+  //   return true;
+  // }
+  // else {
+  //   return false;
+  // }
 }
 
 bool
@@ -274,6 +318,7 @@ MongoDBStorage::hasManifest(const string& hash)
 uint64_t
 MongoDBStorage::size()
 {
+  std::cout << "size" << std::endl;
   mongocxx::collection coll = mDB[COLLNAME_DATA];
 
   return coll.count_documents(document{} << finalize);

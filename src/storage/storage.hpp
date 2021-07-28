@@ -55,6 +55,9 @@ public:
   virtual int64_t
   insert(const Data& data) = 0;
 
+  virtual int64_t
+  insert1(const Data& data) = 0;
+
   virtual std::string
   insertManifest(const Manifest& manifest) = 0;
 

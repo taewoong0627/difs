@@ -4,7 +4,7 @@
 #include <ndn-cxx/security/hc-key-chain.hpp>
 #include <ndn-cxx/security/signing-helpers.hpp>
 
-#include <boost/uuid/detail/sha1.hpp>
+#include <boost/uuid/sha1.hpp>
 #include <iostream>
 
 namespace repo {
